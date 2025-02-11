@@ -1,5 +1,5 @@
 package com.example.snaketry;
-
+import android.view.Gravity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -9,7 +9,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
-    private static final Object R = ;
+
     private Game game = new Game(); // יצירת אובייקט של המשחק
 
     @Override
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
     // ציור הלוח
     private void drawBoard(LinearLayout mainLayout) {
-        mainLayout.removeAllViews(); // מנקה את הלוח לפני הציור מחדש
+        mainLayout.removeAllViews();
 
         for (int i = 0; i < 10; i++) {
             LinearLayout rowLayout = new LinearLayout(this);
@@ -69,8 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
             for (int j = 0; j < 10; j++) {
                 TextView cell = new TextView(this);
-                // מציג את ראש הנחש או לא
-                cell.setText(game.isHeadAt(i, j) ? "Y" : "X");
+                cell.setText(game.isHeadAt(i, j) ? "O" : "."); // לוודא שהראש מוצג
                 cell.setWidth(100);
                 cell.setHeight(100);
                 cell.setTextSize(24f);
@@ -80,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
             mainLayout.addView(rowLayout);
         }
+        System.out.println("Board updated");
     }
 
     // פונקציה להזזה ועדכון המסך
