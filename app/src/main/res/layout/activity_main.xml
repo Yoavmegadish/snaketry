@@ -1,0 +1,73 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <!-- לוח המשחק -->
+    <LinearLayout
+        android:id="@+id/boardLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center" />
+
+    <!-- כפתורי שליטה - ממוקמים בפינה הימנית התחתונה -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="end|bottom"
+        android:padding="20dp">
+
+        <!-- כפתור למעלה (מוזז שמאלה) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="start">
+
+            <Button
+                android:id="@+id/buttonUp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:text="⬆️"
+                android:layout_marginRight="30dp"/>
+        </LinearLayout>
+
+        <!-- כפתורי שמאל וימין -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/buttonLeft"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:text="⬅️" />
+
+            <Button
+                android:id="@+id/buttonRight"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:text="➡️" />
+        </LinearLayout>
+
+        <!-- כפתור למטה (מוזז שמאלה) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="start">
+
+            <Button
+                android:id="@+id/buttonDown"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:text="⬇️"
+                android:layout_marginRight="30dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
