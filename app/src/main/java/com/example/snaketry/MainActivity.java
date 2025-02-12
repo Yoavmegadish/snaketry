@@ -102,4 +102,17 @@ public class MainActivity extends AppCompatActivity {
         // עדכון המסך אחרי הזזת הנחש
         drawBoard(findViewById(R.id.boardLayout));
     }
+    private void MoveRRight() {
+        new Thread(() -> {
+            for (;;)
+            {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                game.moveRight();
+            }
+        }).start();
+    }
 }
