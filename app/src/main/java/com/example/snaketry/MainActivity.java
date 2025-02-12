@@ -87,32 +87,72 @@ public class MainActivity extends AppCompatActivity {
         // הזזת ראש הנחש בהתאם לכיוון
         switch (direction) {
             case "up":
-                game.moveUp();
+                moveContinuously("up");
+
                 break;
             case "down":
-                game.moveDown();
+                moveContinuously("down");
+
                 break;
             case "left":
-                game.moveLeft();
+                moveContinuously("left");
                 break;
             case "right":
-                game.moveRight();
+                moveContinuously("right");
                 break;
         }
         // עדכון המסך אחרי הזזת הנחש
         drawBoard(findViewById(R.id.boardLayout));
     }
-    private void MoveRRight() {
-        new Thread(() -> {
-            for (;;)
-            {
+    private boolean isRunning = false;
+    private Thread movementThread;
+    private String currentDirection = "";
+
+    // פונקציה להתחלת התנועה לכיוון מסוים
+    private void moveContinuously(String direction) {
+        if (direction.equals(currentDirection) && isRunning) return; // אם כבר רצים לכיוון הזה, לא צריך לשנות כלום
+
+        stopMoving(); // לעצור את התנועה הקודמת
+        currentDirection = direction;
+        isRunning = true;
+
+        movementThread = new Thread(() -> {
+            while (isRunning) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(1000); // השהייה של שנייה בין כל תנועה
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
+                    break;
                 }
-                game.moveRight();
+
+                // הזזת הנחש בהתאם לכיוון הנוכחי
+                switch (currentDirection) {
+                    case "right":
+                        game.moveRight();
+                        break;
+                    case "left":
+                        game.moveLeft();
+                        break;
+                    case "up":
+                        game.moveUp();
+                        break;
+                    case "down":
+                        game.moveDown();
+                        break;
+                }
+
+                runOnUiThread(() -> drawBoard(findViewById(R.id.boardLayout))); // עדכון המסך
             }
-        }).start();
+        });
+        movementThread.start();
     }
+
+    // פונקציה לעצירת התנועה
+    private void stopMoving() {
+        isRunning = false;
+        if (movementThread != null) {
+            movementThread.interrupt(); // ניסיון לעצור את ה-Thread הקודם
+        }
+    }
+
 }
