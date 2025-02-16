@@ -63,18 +63,20 @@ public class MainActivity extends AppCompatActivity {
     private void drawBoard(LinearLayout mainLayout) {
         mainLayout.removeAllViews();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 50; i++) {
             LinearLayout rowLayout = new LinearLayout(this);
             rowLayout.setOrientation(LinearLayout.HORIZONTAL);
 
-            for (int j = 0; j < 10; j++) {
+            for (int j = 0; j < 50; j++) {
                 TextView cell = new TextView(this);
                 Point currentPoint = new Point(i, j);
 
                 if (game.getSnake().getFirst().equals(currentPoint)) {
-                    cell.setText("O"); // ראש הנחש
-                } else if (game.getSnake().getLast().equals(currentPoint)) {
-                    cell.setText("O"); // זנב הנחש
+                    cell.setText("\uD83D\uDC0D"); // ראש הנחש
+                } else if (game.isPointInSnake(game.getSnake(),currentPoint)) {
+                    cell.setText("☀\uFE0F");// זנב הנחש
+                }else if(game.getApple().equals(currentPoint)){
+                    cell.setText("\uD83C\uDF4E");
                 } else {
                     cell.setText("."); // תא ריק
                 }
@@ -121,10 +123,16 @@ public class MainActivity extends AppCompatActivity {
     // פונקציה להתחלת התנועה לכיוון מסוים
     private void moveContinuously(String direction) {
         if (direction.equals(currentDirection) && isRunning) return; // אם כבר רצים לכיוון הזה, לא צריך לשנות כלום
-
+        if ((currentDirection.equals("left") && direction.equals("right")) ||
+                (currentDirection.equals("right") && direction.equals("left")) ||
+                (currentDirection.equals("up") && direction.equals("down")) ||
+                (currentDirection.equals("down") && direction.equals("up"))) {
+            return; // אם מנסים לפנות לכיוון הנגדי, לא לעשות כלום
+        }
         stopMoving(); // לעצור את התנועה הקודמת
         currentDirection = direction;
         isRunning = true;
+
 
         movementThread = new Thread(() -> {
             while (isRunning) {
@@ -150,7 +158,17 @@ public class MainActivity extends AppCompatActivity {
                         game.moveDown();
                         break;
                 }
-
+                if (game.getApple().getX() == game.getHead().getX() && game.getApple().getY() == game.getHead().getY()) {
+                    game.spawnApple();
+                    try {
+                        Thread.sleep(100); // השהייה של שנייה בין כל תנועה
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                    moveContinuously(currentDirection);
+                    game.growSnake();
+                }
                 runOnUiThread(() -> drawBoard(findViewById(R.id.boardLayout))); // עדכון המסך
             }
         });
