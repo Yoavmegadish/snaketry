@@ -43,5 +43,12 @@ public class Point {
     public String toString() {
         return "Point{" + "x=" + x + ", y=" + y + '}';
     }
+    public boolean equals(Point p) {
+        if(this.getX()==p.getX()&&this.getY()== p.getY())
+        {
+            return true;
+        }
+        return false;
+    }
 }
 

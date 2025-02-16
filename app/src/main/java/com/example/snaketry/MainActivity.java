@@ -69,7 +69,16 @@ public class MainActivity extends AppCompatActivity {
 
             for (int j = 0; j < 10; j++) {
                 TextView cell = new TextView(this);
-                cell.setText(game.isHeadAt(i, j) ? "O" : "."); // לוודא שהראש מוצג
+                Point currentPoint = new Point(i, j);
+
+                if (game.getSnake().getFirst().equals(currentPoint)) {
+                    cell.setText("O"); // ראש הנחש
+                } else if (game.getSnake().getLast().equals(currentPoint)) {
+                    cell.setText("O"); // זנב הנחש
+                } else {
+                    cell.setText("."); // תא ריק
+                }
+
                 cell.setWidth(100);
                 cell.setHeight(100);
                 cell.setTextSize(24f);
@@ -81,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
         }
         System.out.println("Board updated");
     }
+
 
     // פונקציה להזזה ועדכון המסך
     private void moveAndUpdate(String direction) {
@@ -119,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
         movementThread = new Thread(() -> {
             while (isRunning) {
                 try {
-                    Thread.sleep(1000); // השהייה של שנייה בין כל תנועה
+                    Thread.sleep(500); // השהייה של שנייה בין כל תנועה
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
