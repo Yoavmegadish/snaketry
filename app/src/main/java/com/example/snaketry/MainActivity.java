@@ -1,4 +1,5 @@
 package com.example.snaketry;
+import android.content.Intent;
 import android.view.Gravity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,16 +10,23 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
-
+    TextView pause;
     private Game game = new Game(); // יצירת אובייקט של המשחק
+    private TextView timerText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
+        timerText = findViewById(R.id.timerText);
         LinearLayout mainLayout = findViewById(R.id.boardLayout); // לוח המשחק
+
+        TextView pauseButton = findViewById(R.id.pausebtn);
+        pauseButton.setOnClickListener(v -> {
+            PauseFragment pauseFragment = new PauseFragment();
+            pauseFragment.show(getSupportFragmentManager(), "pause");
+            stopMoving();
+        });
 
         // ציור הלוח בהתחלה
         drawBoard(mainLayout);
@@ -63,22 +71,22 @@ public class MainActivity extends AppCompatActivity {
     private void drawBoard(LinearLayout mainLayout) {
         mainLayout.removeAllViews();
 
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 10; i++) {
             LinearLayout rowLayout = new LinearLayout(this);
             rowLayout.setOrientation(LinearLayout.HORIZONTAL);
 
-            for (int j = 0; j < 50; j++) {
+            for (int j = 0; j < 10; j++) {
                 TextView cell = new TextView(this);
                 Point currentPoint = new Point(i, j);
 
                 if (game.getSnake().getFirst().equals(currentPoint)) {
                     cell.setText("\uD83D\uDC0D"); // ראש הנחש
                 } else if (game.isPointInSnake(game.getSnake(),currentPoint)) {
-                    cell.setText("☀\uFE0F");// זנב הנחש
+                    cell.setText("\uD83D\uDFE2");// זנב הנחש
                 }else if(game.getApple().equals(currentPoint)){
                     cell.setText("\uD83C\uDF4E");
                 } else {
-                    cell.setText("."); // תא ריק
+                    cell.setText("◼\uFE0F"); // תא ריק
                 }
 
                 cell.setWidth(100);
@@ -137,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
         movementThread = new Thread(() -> {
             while (isRunning) {
                 try {
-                    Thread.sleep(500); // השהייה של שנייה בין כל תנועה
+                    Thread.sleep(300); // השהייה של שנייה בין כל תנועה
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
@@ -158,10 +166,14 @@ public class MainActivity extends AppCompatActivity {
                         game.moveDown();
                         break;
                 }
+                if(game.hasDuplicatePoint())
+                {
+                    rejection();
+                }
                 if (game.getApple().getX() == game.getHead().getX() && game.getApple().getY() == game.getHead().getY()) {
                     game.spawnApple();
                     try {
-                        Thread.sleep(100); // השהייה של שנייה בין כל תנועה
+                        Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         break;
@@ -182,5 +194,64 @@ public class MainActivity extends AppCompatActivity {
             movementThread.interrupt(); // ניסיון לעצור את ה-Thread הקודם
         }
     }
+    public void startCountdown() {
+        // עושה את הטקסט של הטיימר גלוי
+        timerText.setVisibility(View.VISIBLE);
 
+        // יצירת טרד נפרד
+        Thread timerThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 3; i >= 0; i--) {
+                    try {
+                        // עדכון הטקסט של הטיימר במיינתראד
+                        final int finalI = i;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(finalI==0)
+                                {
+                                    timerText.setText("go!");
+                                }
+                                else {
+                                    timerText.setText(Integer.toString(finalI));
+                                }
+                            }
+                        });
+
+                        // השהייה של שנייה אחת
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // אחרי שהספירה לאחור מסתיימת, אפשר להפסיק את המשחק
+                // לדוגמה: להחזיר את מצב המשחק להפעלה רגילה
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        resumeGame();
+                    }
+                });
+            }
+        });
+        timerThread.start();
+    }
+
+    public void resumeGame() {
+        timerText.setVisibility(View.GONE);
+        moveContinuously(currentDirection);
+    }
+    public void rejection()
+    {
+        RejectionFragment rejectionFragment = new RejectionFragment();
+        rejectionFragment.show(getSupportFragmentManager(), "rejection");
+        stopMoving();
+
+    }
+    public void restart() {
+         game = new Game();
+        drawBoard(findViewById(R.id.boardLayout));
+    }
 }

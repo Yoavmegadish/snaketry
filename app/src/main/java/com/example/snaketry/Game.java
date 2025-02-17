@@ -2,6 +2,7 @@ package com.example.snaketry;
 
 import android.util.Log;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
@@ -9,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Game {
     private Point head; // מיקום ראש הנחש
-    private final int gridSize = 50; // גודל הלוח
+    private final int gridSize = 10; // גודל הלוח
     private LinkedList<Point> snake = new LinkedList<>();
     private Point apple;
 
@@ -131,5 +132,20 @@ public class Game {
             }
         }
     }
+    public boolean hasDuplicatePoint() {
+        for (int i = 0; i < this.snake.size(); i++) {
+            Point current = this.snake.get(i);
+            Iterator<Point> iterator = this.snake.listIterator(i + 1);
+
+            while (iterator.hasNext()) {
+                if (current.equals(iterator.next())) {
+                    return true; // נמצא כפילות
+                }
+            }
+        }
+        return false; // אין כפילויות
+    }
+
+
 }
 
