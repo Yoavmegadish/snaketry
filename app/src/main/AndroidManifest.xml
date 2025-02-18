@@ -12,22 +12,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Snaketry"
         tools:targetApi="31">
-
+        <activity
+            android:name=".ChooseGameModeActivity"
+            android:exported="false" />
         <!-- PlayActivity יהיה הראשון -->
         <activity
             android:name=".PlayActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- MainActivity ללא intent-filter -->
+        </activity> <!-- MainActivity ללא intent-filter -->
         <activity
             android:name=".MainActivity"
             android:exported="true" />
-
     </application>
 
 </manifest>

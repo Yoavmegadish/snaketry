@@ -44,11 +44,9 @@ public class Point {
         return "Point{" + "x=" + x + ", y=" + y + '}';
     }
     public boolean equals(Point p) {
-        if(this.getX()==p.getX()&&this.getY()== p.getY())
-        {
-            return true;
-        }
-        return false;
+        if (p == null) return false;  // אם הנקודה השנייה היא null, תחזור false.
+        return this.getX() == p.getX() && this.getY() == p.getY();
     }
+
 }
 

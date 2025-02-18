@@ -13,12 +13,40 @@ public class Game {
     private final int gridSize = 10; // גודל הלוח
     private LinkedList<Point> snake = new LinkedList<>();
     private Point apple;
-
-    public Game() {
-        this.head = new Point(1, 0); // מתחילים את הראש במיקום (0,0)
+    private int trapsSize;
+    private Point []traps;
+    public Game(int trapsSize) {
+        this.head = new Point(1, 0); // מתחילים את הראש במיקום (1,0)
         this.snake.addFirst(this.head);
-        this.snake.addLast(new Point(0,0));
+        this.snake.addLast(new Point(0, 0));
         spawnApple();
+        this.trapsSize = trapsSize;
+        this.traps = new Point[this.trapsSize];
+        Random random = new Random();
+
+        for (int i = 0; i < this.trapsSize; i++) {
+            int x = random.nextInt(10);  // מיקום רנדומלי על ציר ה-X (מ-0 עד 9)
+            int y = random.nextInt(10);  // מיקום רנדומלי על ציר ה-Y (מ-0 עד 9)
+            Point p = new Point(x, y);
+
+            // אם המיקום חופף לנחש או תפוח, מחפשים מיקום חדש
+            while (isPointInSnake(this.snake, p) || p.equals(this.apple)) {
+                x = random.nextInt(10);  // מיקום רנדומלי על ציר ה-X (מ-0 עד 9)
+                y = random.nextInt(10);  // מיקום רנדומלי על ציר ה-Y (מ-0 עד 9)
+                p = new Point(x, y);
+            }
+
+            this.traps[i] = p;  // מיקום המלכודת
+        }
+    }
+
+    public int getTrapsSize()
+    {
+        return this.trapsSize;
+    }
+    public void setTrapsSize(int trapsSize)
+    {
+        this.trapsSize=trapsSize;
     }
     public Point getHead()
     {
@@ -38,21 +66,18 @@ public class Game {
     public void moveLeft() {
         Point p=new Point(this.head);
         headMoveTo(this.head.getX(), this.head.getY() - 1); // למעלה = y קטן
-        //tailMoveTo(p.getX(),p.getY());
     }
 
     // הזזת הנחש ימינה
     public void moveRight() {
         Point p=new Point(this.head);
         headMoveTo(this.head.getX(), this.head.getY() + 1); // למטה = y גדל
-       // tailMoveTo(p.getX(),p.getY());
     }
 
     // הזזת הנחש למעלה
     public void moveUp() {
         Point p=new Point(this.head);
         headMoveTo(this.head.getX() - 1, this.head.getY()); // שמאלה = x קטן
-       // tailMoveTo(p.getX(),p.getY());
 
     }
 
@@ -60,7 +85,6 @@ public class Game {
     public void moveDown() {
         Point p=new Point(this.head);
         headMoveTo(this.head.getX() + 1, this.head.getY()); // ימינה = x גדל
-       // tailMoveTo(p.getX(),p.getY());
 
     }
 
@@ -77,12 +101,6 @@ public class Game {
         snake.addFirst(p);
 
     }
-    /*private void tailMoveTo(int newX, int newY) {
-        Log.d("SnakeDebug", "Moving to: (" + newX + ", " + newY + ")");
-        this.snake.getLast().setX((newX + gridSize) % gridSize);
-        this.snake.getLast().setY((newY + gridSize) % gridSize);
-    }*/
-
     public void growSnake()
     {
         Point p=new Point(this.snake.getLast());
@@ -115,7 +133,6 @@ public class Game {
     public void spawnApple() {
         // מאפס את התפוח הקודם
         this.deleteApple();
-
         Random random = new Random();
         // לולאת ניסיון לייצר מיקום רנדומלי שלא חופף עם הנחש
         while (this.apple == null) {
@@ -145,7 +162,14 @@ public class Game {
         }
         return false; // אין כפילויות
     }
-
-
+    public boolean isPointInTraps(Point point)
+    {
+        for(int i=0;i<this.traps.length;i++)
+        {
+            if(point.equals(this.traps[i]))
+                return true;
+        }
+        return false;
+    }
 }
 

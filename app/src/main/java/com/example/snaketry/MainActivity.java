@@ -11,13 +11,26 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     TextView pause;
-    private Game game = new Game(); // יצירת אובייקט של המשחק
+   private Game game; // יצירת אובייקט של המשחק
     private TextView timerText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        int gameMode = getIntent().getIntExtra("GAME_MODE", 1); // ברירת מחדל למצב 1
+
+        switch (gameMode) {
+            case 1:
+                gameMode1();
+                break;
+            case 2:
+                gameMode2();
+                break;
+            case 3:
+                gameMode3();
+                break;
+        }
         timerText = findViewById(R.id.timerText);
         LinearLayout mainLayout = findViewById(R.id.boardLayout); // לוח המשחק
 
@@ -85,7 +98,11 @@ public class MainActivity extends AppCompatActivity {
                     cell.setText("\uD83D\uDFE2");// זנב הנחש
                 }else if(game.getApple().equals(currentPoint)){
                     cell.setText("\uD83C\uDF4E");
-                } else {
+                }
+                else if(game.isPointInTraps(currentPoint)) {
+                    cell.setText("\uD83D\uDD78\uFE0F");
+                }
+                else {
                     cell.setText("◼\uFE0F"); // תא ריק
                 }
 
@@ -166,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                         game.moveDown();
                         break;
                 }
-                if(game.hasDuplicatePoint())
+                if(game.hasDuplicatePoint()||game.isPointInTraps(game.getHead()))
                 {
                     rejection();
                 }
@@ -251,7 +268,23 @@ public class MainActivity extends AppCompatActivity {
 
     }
     public void restart() {
-         game = new Game();
+        int x= game.getTrapsSize();
+         game = new Game(x);
+        drawBoard(findViewById(R.id.boardLayout));
+    }
+    public void gameMode1()
+    {
+        game=new Game(0);
+        drawBoard(findViewById(R.id.boardLayout));
+    }
+    public void gameMode2()
+    {
+        game=new Game(6);
+        drawBoard(findViewById(R.id.boardLayout));
+    }
+    public void gameMode3()
+    {
+        game=new Game(10);
         drawBoard(findViewById(R.id.boardLayout));
     }
 }

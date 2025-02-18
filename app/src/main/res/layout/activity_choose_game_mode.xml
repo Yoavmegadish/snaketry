@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ChooseGameModeActivity">
+
+    <!-- כותרת ראשית -->
+    <TextView
+        android:id="@+id/chooseGameMode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        android:text="Choose Game Mode"
+        android:textSize="24sp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- כפתור מצב משחק 1 -->
+    <TextView
+        android:id="@+id/gameMode1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🟦"
+        android:textSize="50sp"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/chooseGameMode"
+        app:layout_constraintEnd_toStartOf="@+id/gameMode2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.25"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <!-- כפתור מצב משחק 2 -->
+    <TextView
+        android:id="@+id/gameMode2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🟧"
+        android:textSize="50sp"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/chooseGameMode"
+        app:layout_constraintEnd_toStartOf="@+id/gameMode3"
+        app:layout_constraintStart_toEndOf="@+id/gameMode1"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <!-- כפתור מצב משחק 3 -->
+    <TextView
+        android:id="@+id/gameMode3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🟥"
+        android:textSize="50sp"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/chooseGameMode"
+        app:layout_constraintStart_toEndOf="@+id/gameMode2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.75"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <!-- תיאור נוסף או הוראות -->
+    <TextView
+        android:id="@+id/instructions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Select a mode to start the game"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        app:layout_constraintTop_toBottomOf="@+id/gameMode1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

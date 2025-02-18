@@ -24,7 +24,7 @@ public class PlayActivity extends AppCompatActivity {
 
         // טיפול בלחיצה
         playbtn.setOnClickListener(v -> {
-            Intent intent = new Intent(PlayActivity.this, MainActivity.class);
+            Intent intent = new Intent(PlayActivity.this, ChooseGameModeActivity.class);
             startActivity(intent);
         });
     }
