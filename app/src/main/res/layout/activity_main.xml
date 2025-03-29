@@ -26,7 +26,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center" />
+        android:gravity="center"
+        android:padding="16dp"
+        android:background="@drawable/board_background" />
 
     <!-- טיימר -->
     <TextView
