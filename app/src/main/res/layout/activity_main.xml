@@ -4,7 +4,6 @@
     android:orientation="vertical"
     android:gravity="center">
 
-    <!-- שורת מידע בפינה הימנית העליונה -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -29,6 +28,7 @@
         android:orientation="vertical"
         android:gravity="center" />
 
+    <!-- טיימר -->
     <TextView
         android:id="@+id/timerText"
         android:layout_width="wrap_content"
@@ -38,7 +38,18 @@
         android:textColor="#FF0000"
         android:gravity="center"
         android:visibility="gone"
-       android:layout_marginTop="20dp" />
+        android:layout_marginTop="20dp" />
+
+    <!-- תיבת טקסט מתחת ללוח המשחק -->
+    <TextView
+        android:text="score:"
+        android:id="@+id/score"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:layout_marginTop="10dp"
+        android:padding="10dp"
+       />
 
     <!-- כפתורי שליטה - ממוקמים בפינה הימנית התחתונה -->
     <LinearLayout

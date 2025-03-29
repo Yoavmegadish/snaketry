@@ -1,55 +1,99 @@
 package com.example.snaketry;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.view.Gravity;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.IBinder;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
-    TextView pause;
-   private Game game; // יצירת אובייקט של המשחק
+    private TextView pause;
+    private Game game; // יצירת אובייקט של המשחק
     private TextView timerText;
+    private TextView score;
+    private ScoreDatabase db;
+    private SharedPreferences prefs;
+    private static final String PREF_NAME = "SnakeGamePrefs";
+    private static final String LAST_SCORE_KEY = "LAST_SCORE";
+    private ExecutorService executorService;
+    private MusicService musicService;
+    private boolean isBound = false;
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicService.LocalBinder binder = (MusicService.LocalBinder) service;
+            musicService = binder.getService();
+            isBound = true;
+            musicService.startMusic();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            isBound = false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        int gameMode = getIntent().getIntExtra("GAME_MODE", 1); // ברירת מחדל למצב 1
+
+        // Start MusicService
+        Intent intent = new Intent(this, MusicService.class);
+        startService(intent);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
+        // Initialize database and preferences
+        db = ScoreDatabase.getDatabase(this);
+        prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        executorService = Executors.newSingleThreadExecutor();
+
+        int gameMode = getIntent().getIntExtra("GAME_MODE", GameConfig.DEFAULT_GAME_MODE);
 
         switch (gameMode) {
-            case 1:
+            case GameConfig.GAME_MODE_1:
                 gameMode1();
                 break;
-            case 2:
+            case GameConfig.GAME_MODE_2:
                 gameMode2();
                 break;
-            case 3:
+            case GameConfig.GAME_MODE_3:
                 gameMode3();
                 break;
         }
         timerText = findViewById(R.id.timerText);
+        score = findViewById(R.id.score);
         LinearLayout mainLayout = findViewById(R.id.boardLayout); // לוח המשחק
-
         TextView pauseButton = findViewById(R.id.pausebtn);
         pauseButton.setOnClickListener(v -> {
             PauseFragment pauseFragment = new PauseFragment();
             pauseFragment.show(getSupportFragmentManager(), "pause");
             stopMoving();
         });
-
-        // ציור הלוח בהתחלה
+         // ציור הלוח בהתחלה
         drawBoard(mainLayout);
-
+        score.setText(String.valueOf("score:"+game.getScore()));
         // חיבור כפתורי השליטה
         Button buttonUp = findViewById(R.id.buttonUp);
         Button buttonDown = findViewById(R.id.buttonDown);
         Button buttonLeft = findViewById(R.id.buttonLeft);
         Button buttonRight = findViewById(R.id.buttonRight);
-
         // חיבור האזנות הקלקה לכפתורים
         buttonUp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,12 +127,10 @@ public class MainActivity extends AppCompatActivity {
     // ציור הלוח
     private void drawBoard(LinearLayout mainLayout) {
         mainLayout.removeAllViews();
-
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < GameConfig.GRID_SIZE; i++) {
             LinearLayout rowLayout = new LinearLayout(this);
             rowLayout.setOrientation(LinearLayout.HORIZONTAL);
-
-            for (int j = 0; j < 10; j++) {
+            for (int j = 0; j < GameConfig.GRID_SIZE; j++) {
                 TextView cell = new TextView(this);
                 Point currentPoint = new Point(i, j);
 
@@ -103,16 +145,15 @@ public class MainActivity extends AppCompatActivity {
                     cell.setText("\uD83D\uDD78\uFE0F");
                 }
                 else {
-                    cell.setText("◼\uFE0F"); // תא ריק
+                    cell.setText(""); // תא ריק
                 }
 
-                cell.setWidth(100);
-                cell.setHeight(100);
-                cell.setTextSize(24f);
+                cell.setWidth(GameConfig.CELL_WIDTH);
+                cell.setHeight(GameConfig.CELL_HEIGHT);
+                cell.setTextSize(GameConfig.CELL_TEXT_SIZE);
                 cell.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
                 rowLayout.addView(cell);
             }
-
             mainLayout.addView(rowLayout);
         }
         System.out.println("Board updated");
@@ -158,53 +199,66 @@ public class MainActivity extends AppCompatActivity {
         currentDirection = direction;
         isRunning = true;
 
-
-        movementThread = new Thread(() -> {
-            while (isRunning) {
-                try {
-                    Thread.sleep(300); // השהייה של שנייה בין כל תנועה
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    break;
-                }
-
-                // הזזת הנחש בהתאם לכיוון הנוכחי
-                switch (currentDirection) {
-                    case "right":
-                        game.moveRight();
-                        break;
-                    case "left":
-                        game.moveLeft();
-                        break;
-                    case "up":
-                        game.moveUp();
-                        break;
-                    case "down":
-                        game.moveDown();
-                        break;
-                }
-                if(game.hasDuplicatePoint()||game.isPointInTraps(game.getHead()))
-                {
-                    rejection();
-                }
-                if (game.getApple().getX() == game.getHead().getX() && game.getApple().getY() == game.getHead().getY()) {
-                    game.spawnApple();
+        movementThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isRunning) {
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(300); // השהייה של 300 מילישניות בין כל תנועה
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         break;
                     }
-                    moveContinuously(currentDirection);
-                    game.growSnake();
+
+                    // הזזת הנחש בהתאם לכיוון הנוכחי
+                    switch (currentDirection) {
+                        case "right":
+                            game.moveRight();
+                            break;
+                        case "left":
+                            game.moveLeft();
+                            break;
+                        case "up":
+                            game.moveUp();
+                            break;
+                        case "down":
+                            game.moveDown();
+                            break;
+                    }
+
+                    if (game.hasDuplicatePoint() || game.isPointInTraps(game.getHead())) {
+                        rejection();
+                    }
+
+                    if (game.getApple().getX() == game.getHead().getX() && game.getApple().getY() == game.getHead().getY()) {
+                        game.spawnApple();
+                        moveContinuously(currentDirection);
+                        game.growSnake();
+                        game.addScore();
+
+                        // עדכון תצוגת הניקוד על ה-UI Thread
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                score.setText("score:" + String.valueOf(game.getScore()));
+                            }
+                        });
+                    }
+
+                    // עדכון המסך על ה-UI Thread
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            drawBoard(findViewById(R.id.boardLayout));
+                        }
+                    });
                 }
-                runOnUiThread(() -> drawBoard(findViewById(R.id.boardLayout))); // עדכון המסך
             }
         });
         movementThread.start();
     }
 
-    // פונקציה לעצירת התנועה
+        // פונקציה לעצירת התנועה
     private void stopMoving() {
         isRunning = false;
         if (movementThread != null) {
@@ -212,49 +266,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public void startCountdown() {
-        // עושה את הטקסט של הטיימר גלוי
+        // הצגת הטיימר
         timerText.setVisibility(View.VISIBLE);
 
-        // יצירת טרד נפרד
-        Thread timerThread = new Thread(new Runnable() {
+        new CountDownTimer(GameConfig.COUNTDOWN_DURATION_MS, GameConfig.COUNTDOWN_INTERVAL_MS) {
             @Override
-            public void run() {
-                for (int i = 3; i >= 0; i--) {
-                    try {
-                        // עדכון הטקסט של הטיימר במיינתראד
-                        final int finalI = i;
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if(finalI==0)
-                                {
-                                    timerText.setText("go!");
-                                }
-                                else {
-                                    timerText.setText(Integer.toString(finalI));
-                                }
-                            }
-                        });
-
-                        // השהייה של שנייה אחת
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            public void onTick(long millisUntilFinished) {
+                int secondsLeft = (int) (millisUntilFinished / 1000);
+                if (secondsLeft == 0) {
+                    timerText.setText("Go!");
+                } else {
+                    timerText.setText(String.valueOf(secondsLeft));
                 }
-
-                // אחרי שהספירה לאחור מסתיימת, אפשר להפסיק את המשחק
-                // לדוגמה: להחזיר את מצב המשחק להפעלה רגילה
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        resumeGame();
-                    }
-                });
             }
-        });
-        timerThread.start();
+
+            @Override
+            public void onFinish() {
+                resumeGame();
+            }
+        }.start();
     }
+
 
     public void resumeGame() {
         timerText.setVisibility(View.GONE);
@@ -262,12 +294,14 @@ public class MainActivity extends AppCompatActivity {
     }
     public void rejection()
     {
+        updateBestScore();
         RejectionFragment rejectionFragment = new RejectionFragment();
         rejectionFragment.show(getSupportFragmentManager(), "rejection");
         stopMoving();
 
     }
     public void restart() {
+        updateBestScore();
         int x= game.getTrapsSize();
          game = new Game(x);
         drawBoard(findViewById(R.id.boardLayout));
@@ -286,5 +320,41 @@ public class MainActivity extends AppCompatActivity {
     {
         game=new Game(10);
         drawBoard(findViewById(R.id.boardLayout));
+    }
+    private void updateBestScore() {
+        int currentScore = game.getScore();
+        
+        // Save last score to SharedPreferences
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(LAST_SCORE_KEY, currentScore);
+        editor.apply();
+
+        // Save score to database using Room
+        executorService.execute(() -> {
+            Score score = new Score(currentScore);
+            db.scoreDAO().insert(score);
+        });
+    }
+
+    public int getLastScore() {
+        return prefs.getInt(LAST_SCORE_KEY, 0);
+    }
+
+    public int getBestScore() {
+        return db.scoreDAO().getBestScore();
+    }
+
+    public LiveData<List<Score>> getTopScores() {
+        return db.scoreDAO().getTopScores();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
+        if (isBound) {
+            unbindService(connection);
+            isBound = false;
+        }
     }
 }
