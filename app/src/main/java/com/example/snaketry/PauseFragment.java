@@ -73,7 +73,16 @@ public class PauseFragment extends DialogFragment {
 
         giveUpbtn.setOnClickListener(v -> {
             if (getActivity() != null) {
-                getActivity().finish();
+                new androidx.appcompat.app.AlertDialog.Builder(getActivity())
+                        .setTitle("Exit Game")
+                        .setMessage("Are you sure you want to quit the game?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            getActivity().finish();  // Close the activity
+                        })
+                        .setNegativeButton("No", (dialog, which) -> {
+                            dialog.dismiss();  // Close the dialog
+                        })
+                        .show();
             }
         });
 

@@ -55,7 +55,7 @@
             android:id="@+id/imout"
             android:layout_width="160dp"
             android:layout_height="wrap_content"
-            android:text="יציאה"
+            android:text="Exit"
             android:textSize="18sp"
             android:layout_marginEnd="16dp"
             android:backgroundTint="#FF4444"
@@ -65,7 +65,7 @@
             android:id="@+id/anotheronebtn"
             android:layout_width="160dp"
             android:layout_height="wrap_content"
-            android:text="שחק שוב"
+            android:text="Play again"
             android:textSize="18sp"
             android:backgroundTint="#4CAF50"
             android:elevation="4dp" />
